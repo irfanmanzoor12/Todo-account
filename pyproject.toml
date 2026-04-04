@@ -1,0 +1,17 @@
+[project]
+name = "todoapp"
+version = "0.1.0"
+description = "Phase I — Accounting Ledger Console App"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "rich>=14.3.3",
+]
+
+[project.scripts]
+todoapp = "src.todo.main:main"
+
+[tool.uv.workspace]
+members = [
+    "backend",
+]

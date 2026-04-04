@@ -1,0 +1,30 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Environment files — NEVER commit these (contain passwords/secrets)
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env.local
+
+# Dependencies
+node_modules/
+
+# Next.js build
+.next/
+out/
+
+# UV lock (optional)
+# uv.lock
+
+# Claude Code tool config (local only)
+.claude/
