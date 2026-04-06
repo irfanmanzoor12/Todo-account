@@ -1,8 +1,11 @@
 # [Spec: specs/api/rest-endpoints.md]
 
+import json
+import os
+import httpx
 from datetime import datetime
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlmodel import Session, select
 from ..models import (
     AccountingEntry, AccountingEntryCreate, AccountingEntryRead,
@@ -12,6 +15,23 @@ from ..database import get_session
 from ..auth import verify_token
 
 router = APIRouter()
+
+# Dapr sidecar publishes events to Kafka via pub/sub
+DAPR_URL = os.getenv("DAPR_URL", "http://localhost:3500")
+PUBSUB_NAME = "accounting-pubsub"
+TOPIC_NAME  = "entry-events"
+
+
+async def publish_event(event: dict):
+    """Fire-and-forget: publish entry event to Kafka via Dapr."""
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            await client.post(
+                f"{DAPR_URL}/v1.0/publish/{PUBSUB_NAME}/{TOPIC_NAME}",
+                json=event,
+            )
+    except Exception:
+        pass  # Never block the API response for event publishing
 
 
 def check_user(user_id: str, token_data: dict):
@@ -37,9 +57,10 @@ def list_entries(
 
 
 @router.post("/api/{user_id}/entries", response_model=AccountingEntryRead, status_code=201)
-def create_entry(
+async def create_entry(
     user_id: str,
     entry: AccountingEntryCreate,
+    background_tasks: BackgroundTasks,
     session: Session = Depends(get_session),
     token_data: dict = Depends(verify_token),
 ):
@@ -48,6 +69,19 @@ def create_entry(
     session.add(db_entry)
     session.commit()
     session.refresh(db_entry)
+
+    # Publish event to Kafka via Dapr (non-blocking)
+    background_tasks.add_task(publish_event, {
+        "event":            "entry_created",
+        "user_id":          user_id,
+        "entry_id":         db_entry.id,
+        "title":            db_entry.title,
+        "account_category": db_entry.account_category,
+        "transaction_type": db_entry.transaction_type,
+        "amount":           db_entry.amount,
+        "timestamp":        datetime.utcnow().isoformat(),
+    })
+
     return db_entry
 
 

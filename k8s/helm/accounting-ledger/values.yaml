@@ -29,3 +29,11 @@ secrets:
   DATABASE_URL: ""
   BETTER_AUTH_SECRET: ""
   OPENAI_API_KEY: ""
+  KAFKA_BROKER: ""
+  KAFKA_USERNAME: ""
+  KAFKA_PASSWORD: ""
+
+dapr:
+  enabled: true
+  appId: "accounting-ledger"
+  appPort: "8000"

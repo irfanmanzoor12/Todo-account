@@ -13,6 +13,10 @@ spec:
     metadata:
       labels:
         app: {{ .Release.Name }}-backend
+      annotations:
+        dapr.io/enabled: "{{ .Values.dapr.enabled }}"
+        dapr.io/app-id: "{{ .Values.dapr.appId }}"
+        dapr.io/app-port: "{{ .Values.dapr.appPort }}"
     spec:
       containers:
         - name: backend
@@ -41,6 +45,8 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-secrets
                   key: OPENAI_API_KEY
+            - name: DAPR_URL
+              value: "http://localhost:3500"
           resources:
             limits:
               cpu: {{ .Values.resources.limits.cpu }}
