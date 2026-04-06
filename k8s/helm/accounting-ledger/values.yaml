@@ -1,0 +1,31 @@
+# values.yaml — default configuration for the Helm chart
+# Override these when deploying: helm install ... --set key=value
+
+replicaCount: 2
+
+image:
+  repository: accounting-ledger-backend
+  tag: latest
+  pullPolicy: Never   # use local Docker image (not from a registry)
+
+service:
+  type: LoadBalancer
+  port: 8000
+
+resources:
+  limits:
+    cpu: "500m"       # 0.5 CPU core
+    memory: "256Mi"
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+
+# Non-secret env vars go here (safe to commit)
+env:
+  FRONTEND_URL: "http://localhost:3000"
+
+# Secret env vars — set via --set or a Kubernetes Secret (never commit real values)
+secrets:
+  DATABASE_URL: ""
+  BETTER_AUTH_SECRET: ""
+  OPENAI_API_KEY: ""

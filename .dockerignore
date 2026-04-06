@@ -1,0 +1,19 @@
+# Exclude large/unnecessary dirs from build context
+.venv
+.git
+.claude
+.agents
+node_modules
+frontend
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+.env
+.env.local
+*.md
+specs/
+src/
+main.py
+uv.lock
+k8s/

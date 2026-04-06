@@ -1,0 +1,27 @@
+# Dockerfile for FastAPI backend
+# Uses uv to install dependencies directly from pyproject.toml
+
+FROM python:3.13-slim
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Install system deps (SSL certs for Neon DB)
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy only the dependency file first (layer cache)
+COPY backend/pyproject.toml ./pyproject.toml
+
+# Install dependencies using uv (no lock file needed)
+RUN uv pip install --system -r pyproject.toml
+
+# Copy application source
+COPY backend/src ./src
+
+ENV PYTHONPATH="/app"
+
+EXPOSE 8000
+
+CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
