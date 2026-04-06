@@ -31,10 +31,12 @@ async function apiFetch(path: string, options: RequestInit = {}) {
 }
 
 export const api = {
+  chat: (userId: string, message: string) =>
+    apiFetch(`/api/${userId}/chat`, { method: "POST", body: JSON.stringify({ message }) }),
   entries: {
-    list: (userId: string, params?: { type?: string }) => {
+    list: (userId: string, params?: { category?: string }) => {
       const query = new URLSearchParams();
-      if (params?.type) query.set("type", params.type);
+      if (params?.category) query.set("category", params.category);
       const qs = query.toString();
       return apiFetch(`/api/${userId}/entries${qs ? `?${qs}` : ""}`);
     },
